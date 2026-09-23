@@ -1,8 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Annotated
-from pydantic import BaseModel, Field, field_validator
-
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 class SubsystemEnum(str, Enum):
     EPS = "EPS"
@@ -23,7 +22,7 @@ class TelemetryPacketCreate(BaseModel):
     metric_name: Annotated[str, Field(min_length=2, max_length=50, examples=["battery_voltage"])]
     value: float
     unit: Annotated[str, Field(min_length=1, max_length=10, examples=["V"])]
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Validateur Pydantic v2 : rejeter les données absurdes à la source
     @field_validator("value")
@@ -41,5 +40,4 @@ class TelemetryPacketResponse(TelemetryPacketCreate):
     severity: TelemetrySeverity
     received_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
